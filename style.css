@@ -1,0 +1,45 @@
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  padding: 30px;
+}
+
+h1 {
+  color: #38bdf8;
+}
+
+.subtitle {
+  color: #94a3b8;
+}
+
+#question-box {
+  margin: 20px;
+  padding: 15px;
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #38bdf8;
+  color: black;
+  font-weight: bold;
+}
+
+#output {
+  margin-top: 20px;
+  padding: 15px;
+  background: #111827;
+  border-radius: 10px;
+}
