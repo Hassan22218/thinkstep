@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ThinkStep Analytics</title>
+</head>
+<body>
+
+<h1>Analytics Dashboard 📊</h1>
+
+<div id="stats"></div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("analytics")) || [];
+
+let total = data.length;
+let correct = data.filter(d => d.correct).length;
+
+let avgTime = data.reduce((a,b) => a + b.timeSpent, 0) / (total || 1);
+
+let hintAvg = data.reduce((a,b) => a + b.hintsUsed, 0) / (total || 1);
+
+document.getElementById("stats").innerHTML = `
+Total Attempts: ${total}<br><br>
+Correct Answers: ${correct}<br>
+Accuracy: ${((correct/total)*100 || 0).toFixed(2)}%<br><br>
+
+Avg Time: ${avgTime.toFixed(2)} sec<br>
+Avg Hints Used: ${hintAvg.toFixed(2)}<br><br>
+
+Weakness Insight:<br>
+${getInsight(data)}
+`;
+
+function getInsight(data){
+  let hints = data.filter(d => d.hintsUsed > 1).length;
+  if(hints > data.length/2){
+    return "Students are heavily dependent on hints.";
+  }
+  return "Balanced learning pattern.";
+}
+</script>
+
+</body>
+</html>

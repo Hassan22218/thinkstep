@@ -2,27 +2,46 @@ let currentQ = 0;
 let hintIndex = 0;
 let score = 0;
 
+let startTime = Date.now();
+let analytics = JSON.parse(localStorage.getItem("analytics")) || [];
+
 function loadQuestion() {
   document.getElementById("question-box").innerText =
     questions[currentQ].question;
 
   document.getElementById("output").innerText = "";
+  document.getElementById("answer").value = "";
+
+  hintIndex = 0;
+  startTime = Date.now();
 }
 
 loadQuestion();
 
 function checkAnswer() {
   let userAns = document.getElementById("answer").value;
+  let correctAns = questions[currentQ].answer;
 
-  if (userAns === questions[currentQ].answer) {
+  let timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
+  analytics.push({
+    question: questions[currentQ].question,
+    userAnswer: userAns,
+    correct: userAns === correctAns,
+    hintsUsed: hintIndex,
+    timeSpent: timeSpent,
+    mistakeType: getMistakeType(userAns, correctAns)
+  });
+
+  localStorage.setItem("analytics", JSON.stringify(analytics));
+
+  if (userAns === correctAns) {
     score++;
-    document.getElementById("output").innerText = "Correct ✔️ Good thinking!";
+    document.getElementById("output").innerText = "Correct ✔️";
     document.getElementById("score").innerText = "Score: " + score;
-
     nextQuestion();
   } else {
-    document.getElementById("output").innerText =
-      "Wrong ❌ Think again or use hint";
+    document.getElementById("output").innerText = "Wrong ❌ Think again";
   }
 }
 
@@ -40,7 +59,7 @@ function showHint() {
 
 function showTrap() {
   document.getElementById("output").innerText =
-    "Mistake Trap: " + questions[currentQ].trap;
+    "Mistake: " + questions[currentQ].trap;
 }
 
 function showSolution() {
@@ -50,13 +69,17 @@ function showSolution() {
 
 function nextQuestion() {
   currentQ++;
-  hintIndex = 0;
 
   if (currentQ < questions.length) {
     loadQuestion();
-    document.getElementById("answer").value = "";
   } else {
     document.getElementById("question-box").innerText =
-      "All questions completed 🎉";
+      "Completed 🎉 Check Analytics";
   }
+}
+
+function getMistakeType(userAns, correctAns) {
+  if (userAns === "") return "no_attempt";
+  if (isNaN(userAns)) return "concept_confusion";
+  return "calculation_error";
 }
