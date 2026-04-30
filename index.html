@@ -1,26 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ThinkStep</title>
+  <title>ThinkStep v2</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="container">
-    <h1>ThinkStep 🧠</h1>
-    <p class="subtitle">Learn how to THINK, not just solve</p>
+<div class="container">
 
-    <div id="question-box"></div>
+  <h1>ThinkStep 🧠</h1>
+  <p>Train your thinking, not just answers</p>
 
-    <button onclick="showHint()">Next Hint</button>
-    <button onclick="showTrap()">Show Mistake Trap</button>
-    <button onclick="showSolution()">Show Solution</button>
+  <div id="question-box"></div>
 
-    <div id="output"></div>
-  </div>
+  <input type="text" id="answer" placeholder="Enter your answer">
+  <button onclick="checkAnswer()">Submit</button>
 
-  <script src="data.js"></script>
-  <script src="script.js"></script>
+  <br><br>
+
+  <button onclick="showHint()">Hint</button>
+  <button onclick="showTrap()">Mistake Trap</button>
+  <button onclick="showSolution()">Solution</button>
+
+  <div id="output"></div>
+
+  <h3 id="score">Score: 0</h3>
+
+</div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
