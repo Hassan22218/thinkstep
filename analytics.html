@@ -7,37 +7,57 @@
 
 <h1>Analytics Dashboard 📊</h1>
 
-<div id="stats"></div>
+<div id="stats">Loading data...</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 <script>
-let data = JSON.parse(localStorage.getItem("analytics")) || [];
+  const firebaseConfig = {
+    apiKey: "AIzaSyCpOX49ofIe9Fg9DBHtXC6eyaVE4PJJ0j4",
+    authDomain: "thinkstep-v5.firebaseapp.com",
+    projectId: "thinkstep-v5",
+    storageBucket: "thinkstep-v5.firebasestorage.app",
+    messagingSenderId: "109223129442",
+    appId: "1:109223129442:web:ec81794bf4a8edee20fc3b"
+  };
 
-let total = data.length;
-let correct = data.filter(d => d.correct).length;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-let avgTime = data.reduce((a,b) => a + b.timeSpent, 0) / (total || 1);
+  // 🔥 FETCH REAL DATA
+  db.collection("attempts").get().then(snapshot => {
 
-let hintAvg = data.reduce((a,b) => a + b.hintsUsed, 0) / (total || 1);
+    let data = [];
+    snapshot.forEach(doc => data.push(doc.data()));
 
-document.getElementById("stats").innerHTML = `
-Total Attempts: ${total}<br><br>
-Correct Answers: ${correct}<br>
-Accuracy: ${((correct/total)*100 || 0).toFixed(2)}%<br><br>
+    let total = data.length;
+    let correct = data.filter(d => d.correct).length;
 
-Avg Time: ${avgTime.toFixed(2)} sec<br>
-Avg Hints Used: ${hintAvg.toFixed(2)}<br><br>
+    let avgTime = data.reduce((a,b) => a + b.timeSpent, 0) / (total || 1);
+    let hintAvg = data.reduce((a,b) => a + b.hintsUsed, 0) / (total || 1);
 
-Weakness Insight:<br>
-${getInsight(data)}
-`;
+    document.getElementById("stats").innerHTML = `
+      Total Attempts: ${total}<br><br>
+      Correct Answers: ${correct}<br>
+      Accuracy: ${((correct/total)*100 || 0).toFixed(2)}%<br><br>
 
-function getInsight(data){
-  let hints = data.filter(d => d.hintsUsed > 1).length;
-  if(hints > data.length/2){
-    return "Students are heavily dependent on hints.";
+      Avg Time: ${avgTime.toFixed(2)} sec<br>
+      Avg Hints Used: ${hintAvg.toFixed(2)}<br><br>
+
+      Weakness Insight:<br>
+      ${getInsight(data)}
+    `;
+  });
+
+  function getInsight(data){
+    let hints = data.filter(d => d.hintsUsed > 1).length;
+    if(hints > data.length/2){
+      return "Students are heavily dependent on hints.";
+    }
+    return "Balanced learning pattern.";
   }
-  return "Balanced learning pattern.";
-}
 </script>
 
 </body>
