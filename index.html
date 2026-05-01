@@ -22,11 +22,15 @@
   <button onclick="showHint()">Hint</button>
   <button onclick="showTrap()">Mistake Trap</button>
   <button onclick="showSolution()">Solution</button>
-  <button onclick="testFirebase()">Test Firebase</button>
 
   <button onclick="window.open('analytics.html')">
     View Analytics 📊
   </button>
+
+  <br><br>
+
+  <!-- TEST BUTTON -->
+  <button onclick="testFirebase()">Test Firebase</button>
 
   <div id="output"></div>
 
@@ -35,18 +39,13 @@
 </div>
 
 <!-- ===================== -->
-<!-- 1. YOUR APP DATA -->
+<!-- 1. FIREBASE SDK (CORRECT VERSION) -->
 <!-- ===================== -->
-<script src="data.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <!-- ===================== -->
-<!-- 2. FIREBASE SDK -->
-<!-- ===================== -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
-<!-- ===================== -->
-<!-- 3. FIREBASE INIT -->
+<!-- 2. FIREBASE INIT -->
 <!-- ===================== -->
 <script>
   const firebaseConfig = {
@@ -63,8 +62,9 @@
 </script>
 
 <!-- ===================== -->
-<!-- 4. MAIN LOGIC -->
+<!-- 3. YOUR DATA + LOGIC -->
 <!-- ===================== -->
+<script src="data.js"></script>
 <script src="script.js"></script>
 
 </body>
