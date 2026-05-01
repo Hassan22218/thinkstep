@@ -1,5 +1,5 @@
 // =============================
-// STATE VARIABLES
+// GLOBAL STATE
 // =============================
 let currentQ = 0;
 let hintIndex = 0;
@@ -31,7 +31,8 @@ loadQuestion();
 // =============================
 function saveAttemptToFirebase(data) {
   if (typeof db === "undefined") {
-    console.error("Firebase DB not initialized ❌");
+    console.error("db not defined ❌");
+    alert("Firebase not connected");
     return;
   }
 
@@ -48,7 +49,7 @@ function saveAttemptToFirebase(data) {
 // CHECK ANSWER
 // =============================
 function checkAnswer() {
-  let userAns = document.getElementById("answer").value;
+  let userAns = document.getElementById("answer").value.trim();
   let correctAns = questions[currentQ].answer;
 
   let timeSpent = Math.floor((Date.now() - startTime) / 1000);
@@ -63,14 +64,13 @@ function checkAnswer() {
     timestamp: Date.now()
   };
 
-  // 🔥 SAVE TO FIREBASE
+  // 🔥 SEND TO FIREBASE
   saveAttemptToFirebase(attemptData);
 
-  // local backup (optional)
+  // local backup
   analytics.push(attemptData);
   localStorage.setItem("analytics", JSON.stringify(analytics));
 
-  // UI logic
   if (userAns === correctAns) {
     score++;
     document.getElementById("output").innerText = "Correct ✔️";
@@ -82,7 +82,7 @@ function checkAnswer() {
 }
 
 // =============================
-// HINT SYSTEM
+// HINT
 // =============================
 function showHint() {
   let q = questions[currentQ];
@@ -97,7 +97,7 @@ function showHint() {
 }
 
 // =============================
-// MISTAKE TRAP
+// TRAP
 // =============================
 function showTrap() {
   document.getElementById("output").innerText =
@@ -127,7 +127,7 @@ function nextQuestion() {
 }
 
 // =============================
-// MISTAKE TYPE DETECTION
+// MISTAKE TYPE
 // =============================
 function getMistakeType(userAns, correctAns) {
   if (userAns === "") return "no_attempt";
@@ -136,9 +136,14 @@ function getMistakeType(userAns, correctAns) {
 }
 
 // =============================
-// TEST BUTTON (OPTIONAL)
+// TEST FIREBASE BUTTON
 // =============================
 function testFirebase() {
+  if (typeof db === "undefined") {
+    alert("Firebase not initialized ❌");
+    return;
+  }
+
   db.collection("test").add({
     message: "ThinkStep working",
     time: Date.now()
