@@ -9,11 +9,12 @@
 
 <div id="stats">Loading data...</div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyCpOX49ofIe9Fg9DBHtXC6eyaVE4PJJ0j4",
     authDomain: "thinkstep-v5.firebaseapp.com",
@@ -26,30 +27,40 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // 🔥 FETCH REAL DATA
-  db.collection("attempts").get().then(snapshot => {
+  // 🔥 FORCE DEBUG (IMPORTANT)
+  console.log("Analytics page loaded");
 
-    let data = [];
-    snapshot.forEach(doc => data.push(doc.data()));
+  db.collection("attempts").get()
+    .then(snapshot => {
 
-    let total = data.length;
-    let correct = data.filter(d => d.correct).length;
+      console.log("Data received ✔");
 
-    let avgTime = data.reduce((a,b) => a + b.timeSpent, 0) / (total || 1);
-    let hintAvg = data.reduce((a,b) => a + b.hintsUsed, 0) / (total || 1);
+      let data = [];
+      snapshot.forEach(doc => data.push(doc.data()));
 
-    document.getElementById("stats").innerHTML = `
-      Total Attempts: ${total}<br><br>
-      Correct Answers: ${correct}<br>
-      Accuracy: ${((correct/total)*100 || 0).toFixed(2)}%<br><br>
+      let total = data.length;
+      let correct = data.filter(d => d.correct).length;
 
-      Avg Time: ${avgTime.toFixed(2)} sec<br>
-      Avg Hints Used: ${hintAvg.toFixed(2)}<br><br>
+      let avgTime = data.reduce((a,b) => a + b.timeSpent, 0) / (total || 1);
+      let hintAvg = data.reduce((a,b) => a + b.hintsUsed, 0) / (total || 1);
 
-      Weakness Insight:<br>
-      ${getInsight(data)}
-    `;
-  });
+      document.getElementById("stats").innerHTML = `
+        Total Attempts: ${total}<br><br>
+        Correct Answers: ${correct}<br>
+        Accuracy: ${((correct/total)*100 || 0).toFixed(2)}%<br><br>
+
+        Avg Time: ${avgTime.toFixed(2)} sec<br>
+        Avg Hints Used: ${hintAvg.toFixed(2)}<br><br>
+
+        Weakness Insight:<br>
+        ${getInsight(data)}
+      `;
+    })
+    .catch(error => {
+      console.error("Firestore error:", error);
+      document.getElementById("stats").innerHTML =
+        "Error loading data ❌ Check console";
+    });
 
   function getInsight(data){
     let hints = data.filter(d => d.hintsUsed > 1).length;
