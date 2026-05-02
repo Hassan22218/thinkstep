@@ -1,7 +1,8 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-  <title>ThinkStep v2</title>
+  <title>ThinkStep v5</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,25 +13,31 @@
   <h1>ThinkStep 🧠</h1>
   <p>Train your thinking, not just answers</p>
 
+  <!-- Student Registration -->
+
+  <h3>Student Registration</h3>
+
+  <input type="text" id="studentName" placeholder="Enter your name">
+  <input type="text" id="studentClass" placeholder="Enter your class">
+
+<button onclick="registerStudent()">Start Learning</button>
+
+  <hr><br>
+
+  <!-- Question Section -->
+
   <div id="question-box"></div>
 
   <input type="text" id="answer" placeholder="Enter your answer">
   <button onclick="checkAnswer()">Submit</button>
 
-  <br><br>
+<br><br>
 
-  <button onclick="showHint()">Hint</button>
-  <button onclick="showTrap()">Mistake Trap</button>
-  <button onclick="showSolution()">Solution</button>
+<button onclick="showHint()">Hint</button> <button onclick="showTrap()">Mistake Trap</button> <button onclick="showSolution()">Solution</button>
 
-  <button onclick="window.open('analytics.html')">
-    View Analytics 📊
-  </button>
+<br><br>
 
-  <br><br>
-
-  <!-- TEST BUTTON -->
-  <button onclick="testFirebase()">Test Firebase</button>
+<button onclick="testFirebase()">Test Firebase</button> <button onclick="window.open('analytics.html')">View Analytics 📊</button>
 
   <div id="output"></div>
 
@@ -38,15 +45,18 @@
 
 </div>
 
-<!-- ===================== -->
-<!-- 1. FIREBASE SDK (CORRECT VERSION) -->
-<!-- ===================== -->
+<!-- Data + Logic -->
+
+<script src="data.js"></script>
+
+<script src="script.js"></script>
+
+<!-- Firebase -->
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-<!-- ===================== -->
-<!-- 2. FIREBASE INIT -->
-<!-- ===================== -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyCpOX49ofIe9Fg9DBHtXC6eyaVE4PJJ0j4",
@@ -60,12 +70,6 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 </script>
-
-<!-- ===================== -->
-<!-- 3. YOUR DATA + LOGIC -->
-<!-- ===================== -->
-<script src="data.js"></script>
-<script src="script.js"></script>
 
 </body>
 </html>
