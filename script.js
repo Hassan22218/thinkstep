@@ -1,158 +1,147 @@
-// =============================
-// GLOBAL STATE
-// =============================
 let currentQ = 0;
 let hintIndex = 0;
 let score = 0;
 
 let startTime = Date.now();
-
-// local backup (optional)
 let analytics = JSON.parse(localStorage.getItem("analytics")) || [];
 
-// =============================
-// LOAD QUESTION
-// =============================
+let currentStudentId = null;
+
+// 🔵 REGISTER STUDENT
+function registerStudent() {
+let name = document.getElementById("studentName").value.trim();
+let studentClass = document.getElementById("studentClass").value.trim();
+
+if (!name || !studentClass) {
+alert("Fill all fields");
+return;
+}
+
+let id = "stu_" + Date.now();
+
+db.collection("students").doc(id).set({
+name: name,
+class: studentClass,
+joinedAt: Date.now()
+});
+
+currentStudentId = id;
+
+alert("Registered ✔ Now start solving");
+}
+
+// 🔵 LOAD QUESTION
 function loadQuestion() {
-  document.getElementById("question-box").innerText =
-    questions[currentQ].question;
+document.getElementById("question-box").innerText =
+questions[currentQ].question;
 
-  document.getElementById("output").innerText = "";
-  document.getElementById("answer").value = "";
+document.getElementById("output").innerText = "";
+document.getElementById("answer").value = "";
 
-  hintIndex = 0;
-  startTime = Date.now();
+hintIndex = 0;
+startTime = Date.now();
 }
 
 loadQuestion();
 
-// =============================
-// SAVE TO FIREBASE
-// =============================
-function saveAttemptToFirebase(data) {
-  if (typeof db === "undefined") {
-    console.error("db not defined ❌");
-    alert("Firebase not connected");
-    return;
-  }
-
-  db.collection("attempts").add(data)
-    .then(() => {
-      console.log("Saved to Firebase ✅");
-    })
-    .catch((error) => {
-      console.error("Firebase error:", error);
-    });
-}
-
-// =============================
-// CHECK ANSWER
-// =============================
+// 🔵 CHECK ANSWER
 function checkAnswer() {
-  let userAns = document.getElementById("answer").value.trim();
-  let correctAns = questions[currentQ].answer;
 
-  let timeSpent = Math.floor((Date.now() - startTime) / 1000);
-
-  let attemptData = {
-    question: questions[currentQ].question,
-    userAnswer: userAns,
-    correct: userAns === correctAns,
-    hintsUsed: hintIndex,
-    timeSpent: timeSpent,
-    mistakeType: getMistakeType(userAns, correctAns),
-    timestamp: Date.now()
-  };
-
-  // 🔥 SEND TO FIREBASE
-  saveAttemptToFirebase(attemptData);
-
-  // local backup
-  analytics.push(attemptData);
-  localStorage.setItem("analytics", JSON.stringify(analytics));
-
-  if (userAns === correctAns) {
-    score++;
-    document.getElementById("output").innerText = "Correct ✔️";
-    document.getElementById("score").innerText = "Score: " + score;
-    nextQuestion();
-  } else {
-    document.getElementById("output").innerText = "Wrong ❌ Think again";
-  }
+if (!currentStudentId) {
+alert("Please register first");
+return;
 }
 
-// =============================
-// HINT
-// =============================
+let userAns = document.getElementById("answer").value.trim();
+let correctAns = questions[currentQ].answer;
+
+let timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
+// save locally (analytics page)
+analytics.push({
+question: questions[currentQ].question,
+userAnswer: userAns,
+correct: userAns === correctAns,
+hintsUsed: hintIndex,
+timeSpent: timeSpent,
+mistakeType: getMistakeType(userAns, correctAns)
+});
+
+localStorage.setItem("analytics", JSON.stringify(analytics));
+
+// 🔥 SAVE TO FIREBASE
+db.collection("attempts").add({
+studentId: currentStudentId,
+question: questions[currentQ].question,
+userAnswer: userAns,
+correct: userAns === correctAns,
+hintsUsed: hintIndex,
+timeSpent: timeSpent,
+mistakeType: getMistakeType(userAns, correctAns),
+timestamp: Date.now()
+});
+
+// UI RESPONSE
+if (userAns === correctAns) {
+score++;
+document.getElementById("output").innerText = "Correct ✔️";
+document.getElementById("score").innerText = "Score: " + score;
+nextQuestion();
+} else {
+document.getElementById("output").innerText = "Wrong ❌ Think again";
+}
+}
+
+// 🔵 HINT
 function showHint() {
-  let q = questions[currentQ];
+let q = questions[currentQ];
 
-  if (hintIndex < q.hints.length) {
-    document.getElementById("output").innerText =
-      "Hint: " + q.hints[hintIndex];
-    hintIndex++;
-  } else {
-    document.getElementById("output").innerText = "No more hints";
-  }
+if (hintIndex < q.hints.length) {
+document.getElementById("output").innerText =
+"Hint: " + q.hints[hintIndex];
+hintIndex++;
+} else {
+document.getElementById("output").innerText = "No more hints";
+}
 }
 
-// =============================
-// TRAP
-// =============================
+// 🔵 TRAP
 function showTrap() {
-  document.getElementById("output").innerText =
-    "Mistake: " + questions[currentQ].trap;
+document.getElementById("output").innerText =
+"Mistake: " + questions[currentQ].trap;
 }
 
-// =============================
-// SOLUTION
-// =============================
+// 🔵 SOLUTION
 function showSolution() {
-  document.getElementById("output").innerText =
-    "Solution:\n" + questions[currentQ].solution.join("\n");
+document.getElementById("output").innerText =
+"Solution:\n" + questions[currentQ].solution.join("\n");
 }
 
-// =============================
-// NEXT QUESTION
-// =============================
+// 🔵 NEXT QUESTION
 function nextQuestion() {
-  currentQ++;
+currentQ++;
 
-  if (currentQ < questions.length) {
-    loadQuestion();
-  } else {
-    document.getElementById("question-box").innerText =
-      "Completed 🎉 Check Analytics";
-  }
+if (currentQ < questions.length) {
+loadQuestion();
+} else {
+document.getElementById("question-box").innerText =
+"Completed 🎉 Check Analytics";
+}
 }
 
-// =============================
-// MISTAKE TYPE
-// =============================
+// 🔵 MISTAKE TYPE
 function getMistakeType(userAns, correctAns) {
-  if (userAns === "") return "no_attempt";
-  if (isNaN(userAns)) return "concept_confusion";
-  return "calculation_error";
+if (userAns === "") return "no_attempt";
+if (isNaN(userAns)) return "concept_confusion";
+return "calculation_error";
 }
 
-// =============================
-// TEST FIREBASE BUTTON
-// =============================
+// 🔵 TEST FIREBASE
 function testFirebase() {
-  if (typeof db === "undefined") {
-    alert("Firebase not initialized ❌");
-    return;
-  }
+db.collection("test").add({
+message: "ThinkStep working",
+time: Date.now()
+});
 
-  db.collection("test").add({
-    message: "ThinkStep working",
-    time: Date.now()
-  })
-  .then(() => {
-    alert("Firebase working ✅");
-  })
-  .catch((error) => {
-    console.error(error);
-    alert("Error ❌");
-  });
+alert("Firebase working ✔");
 }
