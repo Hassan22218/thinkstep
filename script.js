@@ -16,32 +16,35 @@ function loginStudent() {
     return;
   }
 
-  db.collection("students")
-    .where("name", "==", name)
-    .where("class", "==", studentClass)
-    .get()
-    .then((snap) => {
+  let existingId = localStorage.getItem("studentId");
 
-      if (!snap.empty) {
-        currentStudent = snap.docs[0].id;
-        alert("Welcome back ✔");
-      } else {
-        currentStudent = "stu_" + Date.now();
+  if (existingId) {
+    db.collection("students").doc(existingId).get()
+      .then(doc => {
+        if (doc.exists) {
+          currentStudent = existingId;
+          startApp();
+        } else {
+          localStorage.removeItem("studentId");
+          loginStudent();
+        }
+      });
 
-        db.collection("students").doc(currentStudent).set({
-          name: name,
-          class: studentClass,
-          joinedAt: Date.now()
-        });
+    return;
+  }
 
-        alert("New student registered ✔");
-      }
+  currentStudent = "stu_" + Date.now();
 
-      localStorage.setItem("studentId", currentStudent);
-      startApp();
-    });
+  db.collection("students").doc(currentStudent).set({
+    name: name,
+    class: studentClass,
+    joinedAt: Date.now()
+  });
+
+  localStorage.setItem("studentId", currentStudent);
+
+  startApp();
 }
-
 // AUTO LOGIN WITH VALIDATION
 window.onload = function () {
   let saved = localStorage.getItem("studentId");
