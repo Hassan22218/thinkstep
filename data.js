@@ -1,30 +1,16 @@
 const questions = [
-{
-  question: "Solve: 2x + 5 = 15",
-  answer: "5",
-  hints: [
-    "Isolate x first",
-    "Remove constant term",
-    "Use inverse operations"
-  ],
-  trap: "Students often divide by 2 too early",
-  solution: [
-    "2x + 5 = 15",
-    "2x = 10",
-    "x = 5"
-  ]
-},
-{
-  question: "Solve: x + 3 = 10",
-  answer: "7",
-  hints: [
-    "Undo addition",
-    "Subtract both sides"
-  ],
-  trap: "Adding instead of subtracting",
-  solution: [
-    "x + 3 = 10",
-    "x = 7"
-  ]
-}
+  {
+    question: "Solve: x + 3 = 10",
+    answer: "7",
+    hints: ["Move 3 to right", "Subtract 3"],
+    trap: "Adding instead of subtracting",
+    solution: ["x = 10 - 3", "x = 7"]
+  },
+  {
+    question: "Solve: 2x = 14",
+    answer: "7",
+    hints: ["Divide both sides", "14 ÷ 2"],
+    trap: "Multiplying instead of dividing",
+    solution: ["x = 14 / 2", "x = 7"]
+  }
 ];

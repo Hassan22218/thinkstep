@@ -1,147 +1,151 @@
 let currentQ = 0;
 let hintIndex = 0;
 let score = 0;
-
 let startTime = Date.now();
-let analytics = JSON.parse(localStorage.getItem("analytics")) || [];
 
-let currentStudentId = null;
+let currentStudent = null;
 
-// 🔵 REGISTER STUDENT
-function registerStudent() {
-let name = document.getElementById("studentName").value.trim();
-let studentClass = document.getElementById("studentClass").value.trim();
+// ---------------- AUTH ----------------
 
-if (!name || !studentClass) {
-alert("Fill all fields");
-return;
+function loginStudent() {
+  let name = document.getElementById("studentName").value.trim();
+  let studentClass = document.getElementById("studentClass").value.trim();
+
+  if (!name || !studentClass) {
+    alert("Fill all fields");
+    return;
+  }
+
+  db.collection("students")
+    .where("name", "==", name)
+    .where("class", "==", studentClass)
+    .get()
+    .then((snap) => {
+
+      if (!snap.empty) {
+        currentStudent = snap.docs[0].id;
+        alert("Welcome back ✔");
+      } else {
+        currentStudent = "stu_" + Date.now();
+
+        db.collection("students").doc(currentStudent).set({
+          name: name,
+          class: studentClass,
+          joinedAt: Date.now()
+        });
+
+        alert("New student registered ✔");
+      }
+
+      localStorage.setItem("studentId", currentStudent);
+      startApp();
+    });
 }
 
-let id = "stu_" + Date.now();
+// AUTO LOGIN WITH VALIDATION
+window.onload = function () {
+  let saved = localStorage.getItem("studentId");
 
-db.collection("students").doc(id).set({
-name: name,
-class: studentClass,
-joinedAt: Date.now()
-});
+  if (saved) {
+    db.collection("students").doc(saved).get().then(doc => {
+      if (doc.exists) {
+        currentStudent = saved;
+        startApp();
+      } else {
+        localStorage.removeItem("studentId");
+      }
+    });
+  }
+};
 
-currentStudentId = id;
-
-alert("Registered ✔ Now start solving");
+function startApp() {
+  document.getElementById("authBox").style.display = "none";
+  document.getElementById("quizBox").style.display = "block";
+  loadQuestion();
 }
 
-// 🔵 LOAD QUESTION
+// ---------------- QUIZ ----------------
+
 function loadQuestion() {
-document.getElementById("question-box").innerText =
-questions[currentQ].question;
+  document.getElementById("question-box").innerText =
+    questions[currentQ].question;
 
-document.getElementById("output").innerText = "";
-document.getElementById("answer").value = "";
+  document.getElementById("answer").value = "";
+  document.getElementById("output").innerText = "";
 
-hintIndex = 0;
-startTime = Date.now();
+  hintIndex = 0;
+  startTime = Date.now();
 }
 
-loadQuestion();
-
-// 🔵 CHECK ANSWER
 function checkAnswer() {
+  if (!currentStudent) {
+    alert("Login required");
+    return;
+  }
 
-if (!currentStudentId) {
-alert("Please register first");
-return;
+  let userAns = document.getElementById("answer").value.trim();
+  let correct = questions[currentQ].answer;
+
+  let timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
+  db.collection("attempts").add({
+    studentId: currentStudent,
+    question: questions[currentQ].question,
+    userAnswer: userAns,
+    correct: userAns === correct,
+    hintsUsed: hintIndex,
+    timeSpent: timeSpent,
+    timestamp: Date.now()
+  });
+
+  if (userAns === correct) {
+    score++;
+    document.getElementById("score").innerText = "Score: " + score;
+    nextQuestion();
+  } else {
+    document.getElementById("output").innerText = "Wrong ❌";
+  }
 }
 
-let userAns = document.getElementById("answer").value.trim();
-let correctAns = questions[currentQ].answer;
-
-let timeSpent = Math.floor((Date.now() - startTime) / 1000);
-
-// save locally (analytics page)
-analytics.push({
-question: questions[currentQ].question,
-userAnswer: userAns,
-correct: userAns === correctAns,
-hintsUsed: hintIndex,
-timeSpent: timeSpent,
-mistakeType: getMistakeType(userAns, correctAns)
-});
-
-localStorage.setItem("analytics", JSON.stringify(analytics));
-
-// 🔥 SAVE TO FIREBASE
-db.collection("attempts").add({
-studentId: currentStudentId,
-question: questions[currentQ].question,
-userAnswer: userAns,
-correct: userAns === correctAns,
-hintsUsed: hintIndex,
-timeSpent: timeSpent,
-mistakeType: getMistakeType(userAns, correctAns),
-timestamp: Date.now()
-});
-
-// UI RESPONSE
-if (userAns === correctAns) {
-score++;
-document.getElementById("output").innerText = "Correct ✔️";
-document.getElementById("score").innerText = "Score: " + score;
-nextQuestion();
-} else {
-document.getElementById("output").innerText = "Wrong ❌ Think again";
-}
-}
-
-// 🔵 HINT
-function showHint() {
-let q = questions[currentQ];
-
-if (hintIndex < q.hints.length) {
-document.getElementById("output").innerText =
-"Hint: " + q.hints[hintIndex];
-hintIndex++;
-} else {
-document.getElementById("output").innerText = "No more hints";
-}
-}
-
-// 🔵 TRAP
-function showTrap() {
-document.getElementById("output").innerText =
-"Mistake: " + questions[currentQ].trap;
-}
-
-// 🔵 SOLUTION
-function showSolution() {
-document.getElementById("output").innerText =
-"Solution:\n" + questions[currentQ].solution.join("\n");
-}
-
-// 🔵 NEXT QUESTION
 function nextQuestion() {
-currentQ++;
-
-if (currentQ < questions.length) {
-loadQuestion();
-} else {
-document.getElementById("question-box").innerText =
-"Completed 🎉 Check Analytics";
-}
+  currentQ++;
+  if (currentQ < questions.length) {
+    loadQuestion();
+  } else {
+    document.getElementById("question-box").innerText = "Completed 🎉";
+  }
 }
 
-// 🔵 MISTAKE TYPE
-function getMistakeType(userAns, correctAns) {
-if (userAns === "") return "no_attempt";
-if (isNaN(userAns)) return "concept_confusion";
-return "calculation_error";
+// ---------------- HELPERS ----------------
+
+function showHint() {
+  let q = questions[currentQ];
+  if (hintIndex < q.hints.length) {
+    alert(q.hints[hintIndex]);
+    hintIndex++;
+  }
 }
 
-// 🔵 TEST FIREBASE
+function showTrap() {
+  alert(questions[currentQ].trap);
+}
+
+function showSolution() {
+  alert(questions[currentQ].solution.join("\n"));
+}
+
+function logout() {
+  localStorage.removeItem("studentId");
+  location.reload();
+}
+
+// ---------------- FIREBASE TEST ----------------
+
 function testFirebase() {
-db.collection("test").add({
-message: "ThinkStep working",
-time: Date.now()
-});
-
-alert("Firebase working ✔");
+  db.collection("test").add({
+    message: "ThinkStep working",
+    time: Date.now()
+  })
+  .then(() => alert("Firebase OK ✔"))
+  .catch(() => alert("Firebase Error ❌"));
 }
