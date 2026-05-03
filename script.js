@@ -70,7 +70,19 @@ function loadQuestion() {
   document.getElementById("question-box").innerText =
     questions[currentQ].question;
 
-  document.getElementById("answer").value = "";
+  let ansBox = document.getElementById("answer");
+
+  // ✅ HARD RESET (THIS IS THE FIX)
+  ansBox.value = "";
+  ansBox.blur();
+  ansBox.focus();
+
+  // 🔥 stop browser memory/autofill ghost text
+  ansBox.setAttribute("autocomplete", "off");
+  ansBox.setAttribute("autocorrect", "off");
+  ansBox.setAttribute("autocapitalize", "off");
+  ansBox.setAttribute("spellcheck", "false");
+
   document.getElementById("output").innerText = "";
 
   hintIndex = 0;
